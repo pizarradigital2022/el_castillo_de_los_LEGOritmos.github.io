@@ -510,7 +510,7 @@
 
     function verifyTeacher() {
         const pass = document.getElementById('teacher-pass').value;
-        if (pass === "profe123") {
+        if ((pass === "profe123")||(pass === "PROFE")) {
             document.getElementById('teacher-panel').style.display = 'block';
         } else {
             alert("Contraseña incorrecta");
