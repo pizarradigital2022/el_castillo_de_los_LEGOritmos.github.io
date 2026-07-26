@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Castillo Logarítmico de LEGO: El Desafío del Maestrazo</title>
+    <link rel="icon" type="image/x-icon" href="./resources/favicon.ico">
+    
+    
+    <!-- KaTeX para renderizado de fórmulas matemáticas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --lego-red: #E3000B;
+            --lego-blue: #0055BF;
+            --lego-yellow: #FFD700;
+            --lego-green: #00852B;
+            --lego-bg: #F0F3F7;
+            --lego-border: #111111;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--lego-bg);
+            background-image: url('./resources/fondo_lego.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #333;
+            margin: 0;
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 6px solid var(--lego-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 0px var(--lego-border);
+            padding: 30px;
+            margin: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #timer-box {
+            background: var(--lego-red);
+            color: white;
+            padding: 8px 16px;
+            border: 3px solid var(--lego-border);
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 0px var(--lego-border);
+            display: inline-block;
+        }
+
+        .player-tag {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--lego-blue);
+        }
+
+        .lego-btn {
+            background-color: var(--lego-yellow);
+            color: #111;
+            font-weight: bold;
+            border: 4px solid var(--lego-border);
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0px var(--lego-border);
+            transition: all 0.1s ease;
+            margin: 5px;
+            display: inline-block;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .lego-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px var(--lego-border);
+        }
+
+        .lego-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px var(--lego-border);
+        }
+
+        .btn-red { background-color: var(--lego-red); color: white; }
+        .btn-blue { background-color: var(--lego-blue); color: white; }
+        .btn-green { background-color: var(--lego-green); color: white; }
+        .btn-yellow { background-color: var(--lego-yellow); color: #111; }
+
+        h1, h2, h3 {
+            color: var(--lego-blue);
+            text-transform: uppercase;
+            border-bottom: 4px solid var(--lego-yellow);
+            padding-bottom: 10px;
+            margin-top: 5px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* --- CONTENEDOR Y RESTRICCIÓN DE IMÁGENES --- */
+        .image-placeholder {
+            width: 100%;
+            max-height: 220px;
+            background: #e1e8ed;
+            border: 4px dashed var(--lego-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            color: #555;
+            font-weight: bold;
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 200px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 10px;
+            font-size: 1rem;
+            border: 3px solid var(--lego-border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin: 5px;
+        }
+
+        .problem-box, .info-box {
+            background: #fff9e6;
+            border: 3px solid var(--lego-yellow);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #eef6ff;
+            border-color: var(--lego-blue);
+        }
+
+        #teacher-panel {
+            background: #ffe6e6;
+            border: 3px solid var(--lego-red);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        ul {
+            line-height: 1.6;
+        }
+
+        /* FILA MÚLTIPLE DE BOTONES E INPUTS EN PROBLEMAS */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            margin-top: 15px;
+        }
+
+        .btn-group input[type="text"] {
+            flex: 1;
+            min-width: 120px;
+            margin: 0;
+        }
+
+        /* ESTILOS CENTRADOS PARA LA PANTALLA DEL CANDADO */
+        .lock-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .lock-controls input[type="text"] {
+            width: 250px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Barra superior -->
+    <div class="top-bar">
+        <div id="player-display" class="player-tag"></div>
+        <div id="timer-box" style="display:none;">Tiempo: <span id="time-left">00:00</span></div>
+    </div>
+
+    <!-- Pantalla 0: Introducción -->
+    <div id="screen-0" class="screen active">
+        <h1 style="text-align: center;">🧱 El Castillo Logarítmico de LEGO 🏰</h1>
+        <div class="image-placeholder"><img src="./resources/introduccion.png" alt="Castillo LEGO"></div>
+        <div class="info-box">
+            <h3>📜 Misión y Contexto de Juego</h3>
+            <p>La central de robótica y construcción del Castillo LEGO ha entrado en estado de emergencia crítico. El sistema informático de estabilización de las torres principales ha perdido la calibración de sus acelerómetros. Si no logramos introducir las frecuencias de corrección a tiempo, el núcleo colapsará y la estructura entera de piezas se desmoronará.</p>
+            
+            <h3>🔍 ¿Qué es este Breakout Digital?</h3>
+            <p>Un Breakout es un desafío de evasión e investigación donde la lógica y el cálculo son las claves. Para restaurar la estabilidad, deberás superar cuatro módulos de seguridad resolviendo ecuaciones y operaciones logarítmicas complejas. Cada módulo te proporcionará un valor de control parcial ($V_1, V_2, V_3, V_4$). Solo combinando correctamente estos datos podrás generar la clave secreta del <strong>Candado Maestro</strong> y salvar el castillo.</p>
+
+            <h3>📋 Normas de la Misión</h3>
+            <ul>
+                <li><strong>Organización:</strong> Puedes trabajar individualmente o en pareja dentro de tu estación de trabajo.</li>
+                <li><strong>Tiempo límite:</strong> En cuanto selecciones la duración, la cuenta atrás dará inicio. Si el temporizador llega a cero, el sistema colapsará.</li>
+                <li><strong>Valores Parciales:</strong> Apunta con exactitud el resultado final de cada uno de los 4 problemas; los necesitarás juntos al final.</li>
+                <li><strong>Candado de Seguridad:</strong> Un fallo al introducir el código final activará la alarma y bloqueará el terminal.</li>
+            </ul>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <label for="player-name"><strong>Introduce tu nombre o el de tu equipo:</strong></label><br><br>
+            <input type="text" id="player-name" placeholder="Ej: Equipo Constructor Alfa" style="width: 80%;">
+        </div>
+
+        <p><strong>Selecciona la duración de la sesión de clase:</strong></p>
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="lego-btn btn-green" onclick="startGame(30)">30 Minutos</button>
+            <button class="lego-btn btn-blue" onclick="startGame(60)">60 Minutos</button>
+            <button class="lego-btn btn-red" onclick="startGame(90)">90 Minutos</button>
+        </div>
+        <hr>
+        <p style="text-align: center;">Autor: Joaquín Candañedo.<br>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/"><img src="./resources/88x31.png" alt="CC BY-SA"></a></p>
+
+        <hr>
+        <div style="margin-top: 20px;">
+            <button class="lego-btn" onclick="toggleTeacherLogin()">Modo Profesor</button>
+            <div id="teacher-login" style="margin-top: 10px; display:none;">
+                <input type="password" id="teacher-pass" placeholder="Contraseña">
+                <button class="lego-btn btn-blue" onclick="verifyTeacher()">Entrar</button>
+            </div>
+        </div>
+        <div id="teacher-panel">
+            <h3>Panel de Soluciones (Modo Profesor)</h3>
+            <ul>
+                <li>Problema 1 (Ecuación Logarítmica): <strong>8</strong></li>
+                <li>Problema 2 (Variables $a, b, c$): <strong>3</strong></li>
+                <li>Problema 3 (Cambio de Base Extendido): <strong>6</strong></li>
+                <li>Problema 4 (Ecuación Exponencial Reducible): <strong>2</strong></li>
+                <li>Candado Final (Suma total): <strong>19</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Pantalla 1: Problema 1 -->
+    <div id="screen-1" class="screen">
+        <h2>Problema 1: Los Cimientos de Fichas 2x4</h2>
+        <div class="image-placeholder"><img src="./resources/problema_1.png" alt="Cimientos de la torre LEGO"></div>
+        <div class="problem-box">
+            <p>Los ingenieros robóticos han instalado una matriz de sensores de presión en la base del castillo para medir la distribución de peso de las hilera de bloques rojos y azules. Tras analizar la lectura analógica del circuito, la tensión mecánica en los pilares principales responde exactamente a la siguiente ecuación logarítmica:</p>
+            <p style="text-align: center; font-size: 1.25rem;">$$\log_2(x) + \log_2(x - 4) = 5$$</p>
+            <p>Aplica las propiedades de la suma de logaritmos de la misma base para transformar la expresión en una ecuación de segundo grado. Encuentra la solución numéricamente válida para el parámetro de resistencia $x$ (descartando soluciones no pertenecientes al dominio del logaritmo) para registrar tu primer valor parcial $V_1$.</p>
+        </div>
+        <div class="btn-group">
+            <input type="text" id="ans-1" placeholder="Introduce tu resultado (ej: 8)">
+            <button class="lego-btn btn-blue" onclick="nextScreen(2, 1)">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Pantalla 2: Problema 2 -->
+    <div id="screen-2" class="screen">
+        <h2>Problema 2: Desmontaje de Variables en Torres</h2>
+        <div class="image-placeholder"><img src="./resources/problema_2.png" alt="Brazo robótico"></div>
+        <div class="problem-box">
+            <p>El brazo robótico Mindstorms necesita retirar un conjunto de ladrillos de carga de la torre principal. Las constantes de fricción estructural del material vienen dadas por variables abstractas. La telemetría del sistema confirma que se cumplen las siguientes relaciones numéricas en base $b$:</p>
+            <p style="text-align: center; font-size: 1.1rem;">$$\log_b(a) = 2 \quad \text{y} \quad \log_b(c) = 5$$</p>
+            <p>Para recalibrar la fuerza de agarre de la pinza, el microcontrolador necesita expandir y simplificar por completo la siguiente expresión logarítmica compleja aplicando las propiedades del cociente, del producto y de la potencia/radicación:</p>
+            <p style="text-align: center; font-size: 1.25rem;">$$\log_b\left(\frac{c \cdot \sqrt{a}}{b^3}\right)$$</p>
+            <p>Sustituye los valores conocidos para evaluar numéricamente el resultado final que guardaremos como $V_2$.</p>
+        </div>
+        <div class="btn-group">
+            <button class="lego-btn btn-yellow" onclick="switchScreen(1)">← Atrás</button>
+            <input type="text" id="ans-2" placeholder="Introduce tu resultado">
+            <button class="lego-btn btn-blue" onclick="nextScreen(3, 2)">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Pantalla 3: Problema 3 -->
+    <div id="screen-3" class="screen">
+        <h2>Problema 3: El Baluarte de Cambio de Base Ampliado</h2>
+        <div class="image-placeholder"><img src="./resources/problema_3.png" alt="Engranajes del puente levadizo"></div>
+        <div class="problem-box">
+            <p>Para accionar el mecanismo de elevación del puente levadizo, la central de control debe coordinar dos servomotores Technic que operan con frecuencias relativas de base distinta (base 3 y base 4). El factor de desmultiplicación necesario para acoplar ambos engranajes sin romper los dientes de plástico se calcula resolviendo el producto de logaritmos:</p>
+            <p style="text-align: center; font-size: 1.25rem;">$$\log_3(16) \cdot \log_4(27)$$</p>
+            <p>Utiliza la propiedad del cambio de base ($\log_b(a) = \frac{\log_c(a)}{\log_c(b)}$) o descompon los argumentos en potencias para simplificar el producto algebraicamente. Halla el número entero resultante y asígnalo al parámetro $V_3$.</p>
+        </div>
+        <div class="btn-group">
+            <button class="lego-btn btn-yellow" onclick="switchScreen(2)">← Atrás</button>
+            <input type="text" id="ans-3" placeholder="Introduce tu resultado">
+            <button class="lego-btn btn-blue" onclick="nextScreen(4, 3)">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Pantalla 4: Problema 4 -->
+    <div id="screen-4" class="screen">
+        <h2>Problema 4: Ecuación Exponencial del Motor Central</h2>
+        <div class="image-placeholder"><img src="./resources/problema_4.png" alt="Batería"></div>
+        <div class="problem-box">
+            <p>El núcleo de potencia que suministra energía eléctrica a las luces LED y a la cadena de montaje funciona mediante un ciclo de pulsos modulados. La velocidad angular del motor central sigue una curva exponencial que satisface la siguiente ecuación de segundo grado reducible a logaritmos:</p>
+            <p style="text-align: center; font-size: 1.25rem;">$$9^x - 10 \cdot 3^x + 9 = 0$$</p>
+            <p>Realiza un cambio de variable del tipo $y = 3^x$ para obtener las soluciones posibles de $y$, resuelve posteriormente las ecuaciones exponenciales simples resultantes para hallar los valores de $x$, y selecciona el **mayor valor real** de $x$ para establecer el parámetro final $V_4$.</p>
+        </div>
+        <div class="btn-group">
+            <button class="lego-btn btn-yellow" onclick="switchScreen(3)">← Atrás</button>
+            <input type="text" id="ans-4" placeholder="Introduce tu resultado">
+            <button class="lego-btn btn-blue" onclick="nextScreen(5, 4)">Ir al Candado</button>
+        </div>
+    </div>
+
+    <!-- Pantalla 5: Candado Final -->
+    <div id="screen-5" class="screen">
+        <h2>🔐 Candado de Seguridad del Castillo</h2>
+        <div class="image-placeholder"><img src="./resources/candado_bueno.png" alt="Candado de la puerta del castillo LEGO"></div>
+        <div class="problem-box">
+            <p><strong>Sincronización de Componentes:</strong> Has registrado con éxito los valores parciales de las cuatro fases de calibración en la memoria del terminal:</p>
+            <ul>
+                <li>Valor 1 ($V_1$): <span id="display-v1">-</span></li>
+                <li>Valor 2 ($V_2$): <span id="display-v2">-</span></li>
+                <li>Valor 3 ($V_3$): <span id="display-v3">-</span></li>
+                <li>Valor 4 ($V_4$): <span id="display-v4">-</span></li>
+            </ul>
+            <p>Para desbloquear la puerta maestra del castillo y evitar el derrumbe térmico de la estructura LEGO, introduce la suma total exacta de todos los parámetros hallados ($V_1 + V_2 + V_3 + V_4$):</p>
+        </div>
+        
+        <!-- Elementos centrados específicamente para el Candado -->
+        <div class="lock-controls">
+            <button class="lego-btn btn-yellow" onclick="switchScreen(4)">← Volver al Problema 4</button>
+            <input type="text" id="final-lock-input" placeholder="Código de apertura final">
+            <button class="lego-btn btn-green" onclick="checkFinalLock()">Desbloquear Castillo</button>
+        </div>
+    </div>
+
+    <!-- Pantalla 6: Éxito -->
+    <div id="screen-6" class="screen" style="text-align: center;">
+        <h1 style="color: var(--lego-green);">🎉 ¡MISIÓN CUMPLIDA! 🎉</h1>
+        <div class="image-placeholder"><img src="./resources/exito.png" alt="Éxito"></div>
+        <p>¡Enhorabuena <span class="player-name-text"></span>! Has demostrado un dominio excelente de las propiedades algebraicas de los logaritmos. Las torres y motores del Castillo LEGO han recuperado su calibración perfecta y la estructura es totalmente segura.</p>
+        <button class="lego-btn btn-blue" onclick="resetGame()">Jugar de Nuevo</button>
+    </div>
+
+    <!-- Pantalla 7: Derrota por Tiempo -->
+    <div id="screen-7" class="screen" style="text-align: center;">
+        <h1 style="color: var(--lego-red);">⏰ ¡TIEMPO AGOTADO! 💥</h1>
+        <div class="image-placeholder"><img src="./resources/fracaso.png" alt="Fracaso"></div>
+        <p>Lo sentimos, <span class="player-name-text"></span>. El temporizador de seguridad ha llegado a cero antes de completar el diagnóstico. La torre principal del castillo LEGO colapsó en cientos de ladrillos.</p>
+        <button class="lego-btn btn-red" onclick="resetGame()">Reintentar Misión</button>
+    </div>
+
+    <!-- Pantalla 8: Error en el Candado -->
+    <div id="screen-8" class="screen" style="text-align: center;">
+        <h1 style="color: var(--lego-red);">❌ CÓDIGO INCORRECTO ❌</h1>
+        <div class="image-placeholder"><img src="./resources/fracaso.png" alt="Fracaso"></div>
+        <p>¡Atención <span class="player-name-text"></span>! El código introducido no coincide con la suma de verificación del procesador maestro.</p>
+        <p>Revisa minuciosamente tus cálculos parciales en la hoja de borrador y vuelve a sumar los valores antes de que la alarma bloquee el acceso definitivamente.</p>
+        <button class="lego-btn btn-yellow" onclick="resetGame()">Volver a intentarlo</button>
+    </div>
+
+</div>
+
+<script>
+    let timerInterval;
+    let totalSeconds = 0;
+    let playerName = "";
+    const userAnswers = {};
+
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError : false
+        });
+    });
+
+    function startGame(minutes) {
+        const inputName = document.getElementById('player-name').value.trim();
+        playerName = inputName !== "" ? inputName : "Constructor/a";
+        
+        document.querySelectorAll('.player-name-text').forEach(el => el.textContent = playerName);
+        document.getElementById('player-display').textContent = `Jugador: ${playerName}`;
+
+        totalSeconds = minutes * 60;
+        document.getElementById('timer-box').style.display = 'block';
+        startTimer();
+        switchScreen(1);
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        const timerDisplay = document.getElementById('time-left');
+        timerInterval = setInterval(() => {
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                switchScreen(7);
+                return;
+            }
+            totalSeconds--;
+            let mins = Math.floor(totalSeconds / 60);
+            let secs = totalSeconds % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function switchScreen(screenNum) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`screen-${screenNum}`).classList.add('active');
+        
+        if (window.renderMathInElement) {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ],
+                throwOnError : false
+            });
+        }
+    }
+
+    function nextScreen(nextScreenNum, currentProblemNum) {
+        const val = document.getElementById(`ans-${currentProblemNum}`).value;
+        userAnswers[currentProblemNum] = val;
+
+        if (nextScreenNum === 5) {
+            document.getElementById('display-v1').textContent = userAnswers[1] || '0';
+            document.getElementById('display-v2').textContent = userAnswers[2] || '0';
+            document.getElementById('display-v3').textContent = userAnswers[3] || '0';
+            document.getElementById('display-v4').textContent = userAnswers[4] || '0';
+        }
+
+        switchScreen(nextScreenNum);
+    }
+
+    function checkFinalLock() {
+        const finalInput = document.getElementById('final-lock-input').value.trim();
+        if (finalInput === "19") {
+            clearInterval(timerInterval);
+            switchScreen(6);
+        } else {
+            clearInterval(timerInterval);
+            switchScreen(8);
+        }
+    }
+
+    function resetGame() {
+        clearInterval(timerInterval);
+        document.getElementById('timer-box').style.display = 'none';
+        
+        document.getElementById('ans-1').value = '';
+        document.getElementById('ans-2').value = '';
+        document.getElementById('ans-3').value = '';
+        document.getElementById('ans-4').value = '';
+        document.getElementById('final-lock-input').value = '';
+        
+        for (let key in userAnswers) {
+            delete userAnswers[key];
+        }
+
+        switchScreen(0);
+    }
+
+    function toggleTeacherLogin() {
+        const loginDiv = document.getElementById('teacher-login');
+        loginDiv.style.display = loginDiv.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function verifyTeacher() {
+        const pass = document.getElementById('teacher-pass').value;
+        if (pass === "profe123") {
+            document.getElementById('teacher-panel').style.display = 'block';
+        } else {
+            alert("Contraseña incorrecta");
+        }
+    }
+</script>
+
+</body>
+</html>
